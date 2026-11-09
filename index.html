@@ -94,7 +94,7 @@ async function start() {
   loc = getLoc();
   try {
     await liff.init({ liffId: LIFF_ID });
-  } catch (e) { fail('LINE 初始化失敗，請關閉頁面後重新掃描 QR Code'); return; }
+  } catch (e) { fail('LINE 初始化失敗，請關閉頁面後重新掃描 QR Code（錯誤代碼：' + ((e && (e.code || e.name)) || '') + ' ' + ((e && e.message) || '') + '）'); return; }
   if (!liff.isLoggedIn()) { liff.login({ redirectUri: location.href }); return; }
   loc = loc || getLoc();
   if (!LOC_NAMES[loc]) { fail('這個 QR Code 沒有標示教室，請找老師確認'); return; }
