@@ -121,7 +121,7 @@ function render(r) {
   const hist = (r.history || []).slice().reverse()
     .map(h => `<div><span>第 ${esc(h.lesson)} 堂</span><span>${esc(h.date)} ${esc(h.loc)}</span></div>`).join('');
   const histBlock = hist ? `<div class="hist"><h2>這期的上課紀錄</h2>${hist}</div>` : '';
-  const pay = r.lastPay ? `<p class="pay">最近繳費 ${esc(r.lastPay.date)}，${esc(r.lastPay.lessons)} 堂</p>` : '';
+  const pay = r.lastPay ? `<p class="pay">最近繳費 ${esc(r.lastPay.date)}，${esc(r.lastPay.lessons)} 堂${r.lastPay.amount ? '，$' + Number(r.lastPay.amount).toLocaleString('en-US') : ''}</p>` : '';
   const locChip = `<span class="loc">${esc(r.loc)}教室</span>`;
 
   if (r.status === 'query') {
