@@ -28,11 +28,11 @@ main{max-width:420px;margin:0 auto;display:flex;flex-direction:column;align-item
 .sub{color:var(--muted);font-size:.95rem;margin:0}
 .big{font-family:var(--num);font-size:5.4rem;line-height:1;font-weight:700;color:var(--accent);font-variant-numeric:tabular-nums}
 .big.last{font-family:var(--font);font-size:2rem;font-weight:900;line-height:1.3}
-.greet{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px 16px;font-size:1rem;max-width:300px;margin-top:4px}
+.greet{font-size:1.1rem;font-weight:500;max-width:300px;margin:6px 0 4px;color:var(--ink)}
 .hist{width:100%;max-width:300px;margin-top:10px;text-align:left;font-size:.88rem;color:var(--muted)}
 .hist h2{font-size:.88rem;font-weight:700;margin:0 0 4px;color:var(--ink)}
 .hist div{display:flex;justify-content:space-between;padding:5px 0;border-top:1px solid var(--line);font-variant-numeric:tabular-nums}
-.pay{font-size:.82rem;color:var(--muted);margin:6px 0 0}
+.pay{font-size:.86rem;color:var(--muted);margin:6px 0 0}
 .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px;width:100%;text-align:left}
 .card h1{font-size:1.2rem;margin:0 0 6px}
 .card label{display:block;font-size:.9rem;color:var(--muted);margin:14px 0 6px}
@@ -45,6 +45,42 @@ main{max-width:420px;margin:0 auto;display:flex;flex-direction:column;align-item
 .pop{animation:pop .45s ease-out}
 @keyframes pop{0%{transform:scale(.88);opacity:0}100%{transform:none;opacity:1}}
 @media (prefers-reduced-motion:reduce){.pop,.spin{animation:none}}
+
+/* ===== 聖誕節模式（body.xmas）===== */
+body.xmas{
+  --bg:#12201B; --card:#1C2B25; --ink:#F7F0E4; --muted:#B7C2B9; --line:#2C3E37;
+  --accent:#EE5059; --brass:#E6BA5E; --brass-soft:rgba(230,186,94,.16); --warn:#F39A6B;
+  color-scheme:dark;
+  background:radial-gradient(130% 60% at 50% -8%,#2A4A3F 0%,#16271F 48%,#0D1613 100%) fixed var(--bg);
+}
+body.xmas .bar,body.xmas main{position:relative;z-index:1}
+#snow{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:0}
+.lights{position:relative;z-index:1;display:flex;justify-content:space-between;margin:-1px 4px 0;height:16px}
+.lights i{width:8px;height:11px;border-radius:50% 50% 45% 45%;margin-top:4px;animation:tw 2.4s ease-in-out infinite}
+.lights i:nth-child(4n+1){background:#EE5059;box-shadow:0 0 8px #EE5059}
+.lights i:nth-child(4n+2){background:#E6BA5E;box-shadow:0 0 8px #E6BA5E;animation-delay:.6s}
+.lights i:nth-child(4n+3){background:#5FC48A;box-shadow:0 0 8px #5FC48A;animation-delay:1.2s}
+.lights i:nth-child(4n){background:#F7F0E4;box-shadow:0 0 8px #F7F0E4;animation-delay:1.8s}
+@keyframes tw{0%,100%{opacity:1}50%{opacity:.35}}
+.tomte{position:relative;width:220px;display:flex;flex-direction:column;align-items:center;margin:-6px 0 -4px;animation:drop .8s cubic-bezier(.3,1.6,.5,1) both}
+.tomte svg{display:block;width:150px;height:auto;overflow:visible}
+.tomte .cap{white-space:nowrap;font-size:.72rem;letter-spacing:.32em;color:var(--brass);font-weight:700;margin-top:2px;padding-left:.32em}
+.t-body{animation:bob .44s ease-in-out infinite alternate}
+.t-hat{transform-box:view-box;transform-origin:80px 70px;animation:sway 1.76s ease-in-out infinite alternate}
+.t-stick-l{transform-box:view-box;transform-origin:52px 94px;animation:hitL .44s ease-in-out infinite}
+.t-stick-r{transform-box:view-box;transform-origin:108px 94px;animation:hitR .44s ease-in-out infinite}
+.t-head{transform-box:view-box;transform-origin:80px 106px;animation:thump .22s ease-out infinite}
+.note{position:absolute;font-size:1.1rem;color:var(--brass);opacity:0;animation:float 1.76s ease-out infinite}
+.note.n1{left:42px;top:46px}
+.note.n2{right:40px;top:34px;animation-delay:.88s}
+@keyframes drop{0%{transform:translateY(-40px);opacity:0}100%{transform:none;opacity:1}}
+@keyframes bob{to{transform:translateY(2px)}}
+@keyframes sway{0%{transform:rotate(-3deg)}100%{transform:rotate(3deg)}}
+@keyframes hitL{0%,100%{transform:rotate(-26deg)}45%{transform:rotate(4deg)}}
+@keyframes hitR{0%,100%{transform:rotate(4deg)}55%{transform:rotate(26deg)}}
+@keyframes thump{0%{transform:scaleY(.82)}100%{transform:none}}
+@keyframes float{0%{transform:translateY(8px);opacity:0}25%{opacity:1}100%{transform:translateY(-26px);opacity:0}}
+@media (prefers-reduced-motion:reduce){.tomte,.t-body,.t-hat,.t-stick-l,.t-stick-r,.t-head,.note,.lights i{animation:none}.note{opacity:.8}}
 </style>
 </head>
 <body>
@@ -57,6 +93,11 @@ main{max-width:420px;margin:0 auto;display:flex;flex-direction:column;align-item
 const LIFF_ID = '2012512325-UWgznr15';
 const API_URL = 'https://script.google.com/macros/s/AKfycbyPX1r_bQgN-bE5T6XwmMNYbTMC3Ql9qO4TmClIoZvwb9I6wK0XxEuQm4kd8EG-YbVn/exec';
 // ==================================
+
+// ====== 聖誕節模式：這段期間自動出現飄雪和 Tomte（月月日日）======
+const XMAS_FROM = 1120;  // 11 月 20 日開始
+const XMAS_TO   = 1225;  // 12 月 25 日最後一天，26 日起自動恢復原本樣子
+// =================================================================
 
 const LOC_NAMES = { shilin: '士林教室', yongchun: '永春教室' };
 const app = document.getElementById('app');
@@ -74,6 +115,97 @@ function getParam(key) {
 }
 const getLoc = () => getParam('loc');
 let isQuery = false;
+
+// ====== 聖誕節模式 ======
+function isXmas() {
+  const q = getParam('xmas');
+  if (q === '1') return true;
+  if (q === '0') return false;
+  const tw = new Date(Date.now() + 8 * 3600e3);   // 台灣時間
+  const md = (tw.getUTCMonth() + 1) * 100 + tw.getUTCDate();
+  return md >= XMAS_FROM && md <= XMAS_TO;
+}
+const XMAS = isXmas();
+
+const TOMTE = `<div class="tomte" aria-hidden="true">
+<span class="note n1">♪</span><span class="note n2">♫</span>
+<svg viewBox="0 0 160 150">
+  <ellipse cx="80" cy="143" rx="54" ry="6" fill="rgba(0,0,0,.35)"/>
+  <g class="t-body">
+    <ellipse cx="62" cy="136" rx="12" ry="6" fill="#3B2A22"/>
+    <ellipse cx="98" cy="136" rx="12" ry="6" fill="#3B2A22"/>
+    <path d="M48 134 Q50 92 80 86 Q110 92 112 134 Z" fill="#6F8190"/>
+    <path d="M56 68 Q80 62 104 68 Q108 100 80 120 Q52 100 56 68 Z" fill="#F7F3EA"/>
+    <path d="M64 92 Q72 100 80 98 Q88 100 96 92" stroke="#E3DDD0" stroke-width="2" fill="none"/>
+    <circle cx="80" cy="72" r="8" fill="#F3A89A"/>
+    <circle cx="77" cy="69" r="2.4" fill="#FFF" opacity=".7"/>
+    <g class="t-hat">
+      <path d="M52 70 Q52 40 78 22 Q98 8 122 16 Q104 24 102 40 Q104 56 108 70 Q80 78 52 70 Z" fill="#C8263A"/>
+      <path d="M78 22 Q98 8 122 16 Q106 18 96 26 Z" fill="#E0394C" opacity=".6"/>
+      <path d="M50 66 Q80 76 110 66 L110 73 Q80 83 50 73 Z" fill="#9C1B2C"/>
+      <circle cx="124" cy="16" r="7" fill="#F7F3EA"/>
+    </g>
+  </g>
+  <g>
+    <path d="M46 106 L46 128 Q80 140 114 128 L114 106 Z" fill="#8A1E2C"/>
+    <path d="M46 108 L56 127 L66 110 L76 130 L86 110 L96 130 L106 110 L114 124" stroke="#E6BA5E" stroke-width="2" fill="none" stroke-linejoin="round"/>
+    <path d="M46 127 Q80 139 114 127" stroke="#E6BA5E" stroke-width="3" fill="none"/>
+    <g class="t-head"><ellipse cx="80" cy="106" rx="34" ry="8.5" fill="#F4EEE2" stroke="#E6BA5E" stroke-width="3"/></g>
+  </g>
+  <path d="M60 100 Q54 98 52 94" stroke="#6F8190" stroke-width="9" stroke-linecap="round" fill="none"/>
+  <path d="M100 100 Q106 98 108 94" stroke="#6F8190" stroke-width="9" stroke-linecap="round" fill="none"/>
+  <g class="t-stick-l"><line x1="52" y1="94" x2="80" y2="104" stroke="#D9B27A" stroke-width="3.5" stroke-linecap="round"/><circle cx="52" cy="94" r="6.5" fill="#C8263A"/></g>
+  <g class="t-stick-r"><line x1="108" y1="94" x2="80" y2="104" stroke="#D9B27A" stroke-width="3.5" stroke-linecap="round"/><circle cx="108" cy="94" r="6.5" fill="#C8263A"/></g>
+</svg>
+<div class="cap">MERRY CHRISTMAS</div>
+</div>`;
+const deco = () => (XMAS ? TOMTE : '');
+
+function startXmas() {
+  document.body.classList.add('xmas');
+  const bar = document.querySelector('.bar');
+  const lights = document.createElement('div');
+  lights.className = 'lights';
+  lights.setAttribute('aria-hidden', 'true');
+  lights.innerHTML = '<i></i>'.repeat(14);
+  bar.after(lights);
+
+  const c = document.createElement('canvas');
+  c.id = 'snow';
+  c.setAttribute('aria-hidden', 'true');
+  document.body.prepend(c);
+  const ctx = c.getContext('2d');
+  const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  let W = 0, H = 0, t = 0;
+  const flakes = [];
+  const make = init => ({ x: Math.random() * W, y: init ? Math.random() * H : -6,
+    r: Math.random() * 2.4 + 0.8, s: Math.random() * 0.5 + 0.35, p: Math.random() * 6.3, o: Math.random() * 0.5 + 0.45 });
+  function resize() {
+    W = innerWidth; H = innerHeight;
+    c.width = W * dpr; c.height = H * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  resize();
+  addEventListener('resize', resize);
+  const n = Math.round(Math.min(110, W * H / 5000));
+  for (let i = 0; i < n; i++) flakes.push(make(true));
+  function frame() {
+    ctx.clearRect(0, 0, W, H);
+    t += 0.016;
+    for (const f of flakes) {
+      if (!still) { f.y += f.s * (0.35 + f.r * 0.17); f.x += Math.sin(t * 0.6 + f.p) * 0.25; }
+      if (f.y > H + 6) Object.assign(f, make(false));
+      ctx.globalAlpha = f.o;
+      ctx.beginPath(); ctx.arc(f.x, f.y, f.r, 0, 6.2832);
+      ctx.fillStyle = '#FFFFFF'; ctx.fill();
+    }
+    if (!still) requestAnimationFrame(frame);
+  }
+  frame();
+}
+if (XMAS) startXmas();
+
 
 function show(html) {
   app.innerHTML = html;
@@ -128,20 +260,20 @@ function render(r) {
     const big = r.total > 0 && r.lesson > r.total
       ? `<div class="big">第 ${esc(r.lesson)} 堂</div><p class="sub">已超過本期 ${esc(r.total)} 堂</p>`
       : `<div class="big">${esc(r.lesson)}<span style="font-size:2.4rem;color:var(--muted)"> / ${esc(r.total)}</span></div><p class="sub">這期已上的堂數</p>`;
-    show(`<span class="loc">我的上課紀錄</span><p class="who">${esc(r.name)}</p>${big}
+    show(`${deco()}<span class="loc">我的上課紀錄</span><p class="who">${esc(r.name)}</p>${big}
       ${histBlock || '<p class="sub">這期還沒有上課紀錄</p>'}${pay}`);
     return;
   }
 
   if (r.status === 'already') {
-    show(`${locChip}<p class="who">${esc(r.name)}</p><p class="sub">今天已經打過卡了</p>
+    show(`${deco()}${locChip}<p class="who">${esc(r.name)}</p><p class="sub">今天已經打過卡了</p>
       <p class="sub">這是這期的第 ${esc(r.lesson)} 堂課</p>${histBlock}${pay}`);
     return;
   }
   const main = r.isLast
     ? `<div class="big last">這期的最後一堂課</div>`
     : `<p class="sub">這是這期的</p><div class="big">第 ${esc(r.lesson)} 堂</div>`;
-  show(`${locChip}<p class="who">${esc(r.name)}</p>${main}
+  show(`${deco()}${locChip}<p class="who">${esc(r.name)}</p>${main}
     <p class="sub">打卡完成</p>
     ${r.greeting ? `<div class="greet">${esc(r.greeting)}</div>` : ''}
     ${histBlock}${pay}`);
