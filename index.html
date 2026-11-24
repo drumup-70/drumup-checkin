@@ -81,6 +81,12 @@ body.xmas .bar,body.xmas main{position:relative;z-index:1}
 @keyframes thump{0%{transform:scaleY(.82)}100%{transform:none}}
 @keyframes float{0%{transform:translateY(8px);opacity:0}25%{opacity:1}100%{transform:translateY(-26px);opacity:0}}
 @media (prefers-reduced-motion:reduce){.tomte,.t-body,.t-hat,.t-stick-l,.t-stick-r,.t-head,.note,.lights i{animation:none}.note{opacity:.8}}
+.tomte{cursor:pointer;-webkit-tap-highlight-color:transparent}
+.tomte .hint{font-size:.74rem;color:var(--muted);margin-top:4px}
+.tomte.playing .t-body{animation-duration:.22s}
+.tomte.playing .t-stick-l,.tomte.playing .t-stick-r{animation-duration:.22s}
+.songtag{position:fixed;left:50%;top:calc(70px + env(safe-area-inset-top,0px));transform:translate(-50%,-8px);z-index:3;background:rgba(0,0,0,.55);color:#F7F0E4;font-size:.85rem;font-weight:700;padding:6px 14px;border-radius:999px;opacity:0;transition:opacity .3s,transform .3s;pointer-events:none}
+.songtag.on{opacity:1;transform:translate(-50%,0)}
 </style>
 </head>
 <body>
@@ -127,7 +133,7 @@ function isXmas() {
 }
 const XMAS = isXmas();
 
-const TOMTE = `<div class="tomte" aria-hidden="true">
+const TOMTE = `<div class="tomte" role="button" tabindex="0" aria-label="播放一句聖誕歌">
 <span class="note n1">♪</span><span class="note n2">♫</span>
 <svg viewBox="0 0 160 150">
   <ellipse cx="80" cy="143" rx="54" ry="6" fill="rgba(0,0,0,.35)"/>
@@ -158,6 +164,7 @@ const TOMTE = `<div class="tomte" aria-hidden="true">
   <g class="t-stick-r"><line x1="108" y1="94" x2="80" y2="104" stroke="#D9B27A" stroke-width="3.5" stroke-linecap="round"/><circle cx="108" cy="94" r="6.5" fill="#C8263A"/></g>
 </svg>
 <div class="cap">MERRY CHRISTMAS</div>
+<div class="hint">點我聽一段聖誕歌 ♪</div>
 </div>`;
 const deco = () => (XMAS ? TOMTE : '');
 
@@ -205,6 +212,114 @@ function startXmas() {
   frame();
 }
 if (XMAS) startXmas();
+
+// ====== 聖誕歌（點 Tomte 隨機播一句；只用已無版權的傳統歌曲）======
+const SONGS = [
+  { name: 'Jingle Bells', bpm: 150, notes: 'E4 1,E4 1,E4 2,E4 1,E4 1,E4 2,E4 1,G4 1,C4 1.5,D4 .5,E4 4' },
+  { name: 'We Wish You a Merry Christmas', bpm: 150, notes: 'E5 1,E5 1,F5 1,E5 1,D5 1,C5 1,A4 1,G4 .5,G4 .5,A4 1,D5 1,B4 1,C5 3' },
+  { name: 'Deck the Halls', bpm: 140, notes: 'G4 1.5,F4 .5,E4 1,D4 1,C4 1,D4 1,E4 1,C4 1,D4 .5,E4 .5,F4 .5,D4 .5,E4 1.5,D4 .5,C4 1,B3 1,C4 2' },
+  { name: 'Silent Night', bpm: 108, notes: 'G4 1.5,A4 .5,G4 1,E4 3,G4 1.5,A4 .5,G4 1,E4 3' },
+  { name: 'Joy to the World', bpm: 110, notes: 'C5 1,B4 .75,A4 .25,G4 1.5,F4 .5,E4 1,D4 1,C4 2' },
+  { name: 'O Christmas Tree', bpm: 110, notes: 'D4 1,G4 .75,G4 .25,G4 1.5,A4 .5,B4 .75,B4 .25,B4 1.5,B4 .5,A4 .5,B4 .5,C5 1,F#4 1,A4 1,G4 2' }
+];
+let actx = null, master = null, noiseBuf = null, lastSong = -1, playTimer = 0;
+function hz(n) {
+  const m = /^([A-G])(#?)(\d)$/.exec(n);
+  const k = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 }[m[1]] + (m[2] ? 1 : 0);
+  return 440 * Math.pow(2, (k + (Number(m[3]) + 1) * 12 - 69) / 12);
+}
+function audio() {
+  if (actx) return actx;
+  const AC = window.AudioContext || window.webkitAudioContext;
+  if (!AC) return null;
+  actx = new AC();
+  const comp = actx.createDynamicsCompressor();
+  master = actx.createGain(); master.gain.value = 0.32;
+  master.connect(comp).connect(actx.destination);
+  noiseBuf = actx.createBuffer(1, actx.sampleRate * 0.2, actx.sampleRate);
+  const d = noiseBuf.getChannelData(0);
+  for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  return actx;
+}
+function bell(t, f, len) {   // 鐵琴音色（比譜面高一個八度）
+  f = f * 2;
+  // 鐵琴金屬片的泛音不是整數倍：1、2.76、5.40、8.93，高泛音消失得比較快
+  [[1, 0.55, 1.8], [2.76, 0.22, 0.6], [5.4, 0.1, 0.25], [8.93, 0.05, 0.12]].forEach(([m, a, dec]) => {
+    const o = actx.createOscillator(), g = actx.createGain();
+    o.type = 'sine'; o.frequency.value = f * m;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(a, t + 0.003);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dec);
+    o.connect(g).connect(master); o.start(t); o.stop(t + dec + 0.05);
+  });
+  // 琴槌敲擊的瞬間聲
+  const src = actx.createBufferSource(), hp = actx.createBiquadFilter(), cg = actx.createGain();
+  src.buffer = noiseBuf; hp.type = 'highpass'; hp.frequency.value = 5000;
+  cg.gain.setValueAtTime(0.05, t); cg.gain.exponentialRampToValueAtTime(0.0001, t + 0.015);
+  src.connect(hp).connect(cg).connect(master); src.start(t); src.stop(t + 0.03);
+}
+function tap(t, accent) {   // Tomte 的小鼓
+  const src = actx.createBufferSource(), bp = actx.createBiquadFilter(), g = actx.createGain();
+  src.buffer = noiseBuf; bp.type = 'bandpass'; bp.frequency.value = 2600; bp.Q.value = 0.8;
+  g.gain.setValueAtTime(accent ? 0.16 : 0.07, t);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + 0.09);
+  src.connect(bp).connect(g).connect(master); src.start(t); src.stop(t + 0.12);
+}
+let lastPlayAt = 0;
+function playSong(el) {
+  if (!audio()) return;
+  if (Date.now() - lastPlayAt < 400) return;   // 同一次點擊只播一次
+  lastPlayAt = Date.now();
+  if (actx.state === 'suspended') actx.resume();
+  let i; do { i = Math.floor(Math.random() * SONGS.length); } while (SONGS.length > 1 && i === lastSong);
+  lastSong = i;
+  const song = SONGS[i], beat = 60 / song.bpm;
+  master.gain.cancelScheduledValues(actx.currentTime);
+  master.gain.setValueAtTime(0.32, actx.currentTime);
+  let t = actx.currentTime + 0.08, total = 0;
+  song.notes.split(',').forEach(x => {
+    const [n, b] = x.trim().split(' ');
+    bell(t + total * beat, hz(n), Number(b) * beat);
+    total += Number(b);
+  });
+  for (let k = 0; k < Math.ceil(total); k++) tap(t + k * beat, k % 2 === 0);
+  const ms = (total * beat + 0.6) * 1000;
+  el.classList.add('playing');
+  let tag = document.querySelector('.songtag');
+  if (!tag) { tag = document.createElement('div'); tag.className = 'songtag'; document.body.appendChild(tag); }
+  tag.textContent = '♪ ' + song.name;
+  tag.classList.add('on');
+  clearTimeout(playTimer);
+  playTimer = setTimeout(() => { el.classList.remove('playing'); tag.classList.remove('on'); }, ms);
+}
+
+// 打卡成功後自動播放：手機允許就馬上播；不允許的話，學生點一下畫面任何地方就會播
+let pendingSong = false;
+function autoSong() {
+  const el = document.querySelector('.tomte');
+  if (!el || !audio()) return;
+  const go = () => { if (pendingSong) { pendingSong = false; unbind(); playSong(document.querySelector('.tomte') || el); } };
+  const evs = ['pointerup', 'touchend', 'click', 'keydown'];
+  const unbind = () => evs.forEach(ev => document.removeEventListener(ev, go, true));
+  pendingSong = true;
+  evs.forEach(ev => document.addEventListener(ev, go, true));
+  const tryNow = () => { if (actx.state === 'running') go(); };
+  if (actx.state === 'running') tryNow();
+  else {
+    const p = actx.resume();
+    if (p && p.then) p.then(tryNow).catch(() => {});
+    setTimeout(() => {
+      tryNow();
+      if (pendingSong) { const h = el.querySelector('.hint'); if (h) h.textContent = '點一下畫面，聽一段聖誕歌 ♪'; }
+    }, 400);
+  }
+}
+app.addEventListener('click', e => { const el = e.target.closest('.tomte'); if (el && !pendingSong) playSong(el); });
+app.addEventListener('keydown', e => {
+  const el = e.target.closest && e.target.closest('.tomte');
+  if (el && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); playSong(el); }
+});
+
 
 
 function show(html) {
@@ -277,6 +392,7 @@ function render(r) {
     <p class="sub">打卡完成</p>
     ${r.greeting ? `<div class="greet">${esc(r.greeting)}</div>` : ''}
     ${histBlock}${pay}`);
+  if (XMAS) autoSong();
 }
 
 function bindForm(r) {
